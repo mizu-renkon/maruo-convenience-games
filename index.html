@@ -60,6 +60,7 @@ header:before{content:"🏪";font-size:34px;margin-right:8px}
 <header>
   <div class="wrap">
     <h1>🏪 ミズナガコンビニエンスストアで栄養バランスの良い買い物をしようゲーム</h1>
+    <button id="soundBtn" class="secondary" onclick="toggleSound()" style="margin:6px 0">🔊 音ON</button>
     <div class="sub">1,000円以内で昼食を組み合わせよう。商品の詳しい栄養成分は、ゲーム終了まで秘密！</div>
   </div>
 </header>
@@ -93,7 +94,7 @@ header:before{content:"🏪";font-size:34px;margin-right:8px}
     <div><div class="icons">🥛🍌🥤</div><b>飲み物・デザート</b></div>
   </div>
   <div style="margin-top:10px;background:#fff;border:2px solid #087cc1;border-radius:14px;padding:10px;font-weight:800">
-    👨‍🏪 マルオ店長：「商品をタップしてカゴに入れよう！詳しい栄養成分はレジまで秘密です。」
+    👨‍🏪 ミズナガ店長：「商品をタップしてカゴに入れよう！詳しい栄養成分はレジまで秘密です。」
   </div>
 </div>
 <div class="filters" id="filters"></div>
@@ -262,8 +263,8 @@ renderFilters();update();
 </script>
 
 <script>
-const MARUO_ICONS={"鮭おにぎり": "🍙", "ツナマヨおにぎり": "🍙", "梅おにぎり": "🍙", "おかかおにぎり": "🍙", "いなり寿司3個": "🍣", "焼きそば": "🍝", "ナポリタン": "🍝", "ミックスサンド": "🥪", "サラダチキン": "🍗", "ゆで卵2個": "🥚", "焼き鳥もも2本": "🍢", "からあげ4個": "🍗", "豚しゃぶサラダ": "🥗", "焼き魚（鮭）": "🐟", "ハンバーグ": "🍖", "豆腐バー": "🧈", "野菜サラダ": "🥗", "海藻サラダ": "🌿", "ひじき煮": "🥢", "きんぴらごぼう": "🥕", "ほうれん草のおひたし": "🥬", "ブロッコリーサラダ": "🥦", "野菜スープ": "🍲", "豚汁": "🍲", "プレーンヨーグルト": "🥛", "飲むヨーグルト": "🥛", "牛乳500ml": "🥛", "低脂肪乳500ml": "🥛", "バナナ": "🍌", "カットフルーツ": "🍎", "カップラーメン": "🍜", "大盛りカップ焼きそば": "🍜", "菓子パン（クリーム）": "🥐", "メロンパン": "🍈", "フライドチキン": "🍗", "ポテトサラダ": "🥔", "ポテトチップス": "🥔", "チョコレート": "🍫", "エナジー系飲料": "🥤", "炭酸飲料500ml": "🥤"};
-function maruoIcon(name){return MARUO_ICONS[name]||"🛍️";}
+const MIZUNAGA_ICONS={"鮭おにぎり": "🍙", "ツナマヨおにぎり": "🍙", "梅おにぎり": "🍙", "おかかおにぎり": "🍙", "いなり寿司3個": "🍣", "焼きそば": "🍝", "ナポリタン": "🍝", "ミックスサンド": "🥪", "サラダチキン": "🍗", "ゆで卵2個": "🥚", "焼き鳥もも2本": "🍢", "からあげ4個": "🍗", "豚しゃぶサラダ": "🥗", "焼き魚（鮭）": "🐟", "ハンバーグ": "🍖", "豆腐バー": "🧈", "野菜サラダ": "🥗", "海藻サラダ": "🌿", "ひじき煮": "🥢", "きんぴらごぼう": "🥕", "ほうれん草のおひたし": "🥬", "ブロッコリーサラダ": "🥦", "野菜スープ": "🍲", "豚汁": "🍲", "プレーンヨーグルト": "🥛", "飲むヨーグルト": "🥛", "牛乳500ml": "🥛", "低脂肪乳500ml": "🥛", "バナナ": "🍌", "カットフルーツ": "🍎", "カップラーメン": "🍜", "大盛りカップ焼きそば": "🍜", "菓子パン（クリーム）": "🥐", "メロンパン": "🍈", "フライドチキン": "🍗", "ポテトサラダ": "🥔", "ポテトチップス": "🥔", "チョコレート": "🍫", "エナジー系飲料": "🥤", "炭酸飲料500ml": "🥤"};
+function mizunagaIcon(name){return MIZUNAGA_ICONS[name]||"🛍️";}
 const oldRenderProducts=renderProducts;
 renderProducts=function(){
  const el=document.getElementById("products");
@@ -271,7 +272,7 @@ renderProducts=function(){
  el.innerHTML=list.map(p=>{
    const idx=products.indexOf(p), selected=cart.includes(idx);
    return `<div class="product ${selected?'selected':''}" onclick="toggle(${idx})">
-     <div style="font-size:48px;text-align:center;margin-top:-4px">${maruoIcon(p.name)}</div>
+     <div style="font-size:48px;text-align:center;margin-top:-4px">${mizunagaIcon(p.name)}</div>
      <h3>${p.name}</h3><div class="price">${yen(p.price)}円</div><span class="tag">${p.cat}</span>
      <div class="note">🔒 詳しい栄養成分はレジまで秘密</div>
    </div>`;
@@ -286,5 +287,89 @@ toggle=function(i){
 };
 renderProducts();
 </script>
+
+<script>
+/* ミズナガコンビニ：コンビニっぽい効果音（外部音源なし・無料） */
+let soundOn = true;
+let audioCtx = null;
+let bgmTimer = null;
+let bgmStep = 0;
+
+function initAudio(){
+  if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if(audioCtx.state === 'suspended') audioCtx.resume();
+}
+function tone(freq, duration=0.09, type='sine', volume=0.045, delay=0){
+  if(!soundOn) return;
+  initAudio();
+  const t=audioCtx.currentTime+delay;
+  const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+  o.type=type; o.frequency.setValueAtTime(freq,t);
+  g.gain.setValueAtTime(0.0001,t);
+  g.gain.exponentialRampToValueAtTime(volume,t+0.008);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+duration);
+  o.connect(g).connect(audioCtx.destination); o.start(t); o.stop(t+duration+0.02);
+}
+function sfxAdd(){ tone(660,.07,'square',.035); tone(880,.10,'square',.03,.055); }
+function sfxRemove(){ tone(520,.08,'sine',.03); tone(390,.10,'sine',.025,.06); }
+function sfxScan(){ tone(900,.055,'square',.04); tone(1250,.07,'square',.035,.07); }
+function sfxRegister(){ tone(784,.09,'square',.035); tone(988,.09,'square',.035,.10); tone(1175,.16,'square',.04,.20); }
+function sfxGood(){ [523,659,784,1047].forEach((f,i)=>tone(f,.13,'triangle',.04,i*.09)); }
+function sfxBad(){ tone(440,.14,'sawtooth',.025); tone(330,.20,'sawtooth',.02,.13); }
+function sfxError(){ tone(220,.12,'square',.03); tone(165,.16,'square',.025,.12); }
+function startBgm(){
+  if(!soundOn || bgmTimer) return;
+  initAudio();
+  const notes=[392,440,494,523,494,440,392,330];
+  bgmTimer=setInterval(()=>{
+    if(!soundOn) return;
+    tone(notes[bgmStep%notes.length],.12,'triangle',.012);
+    bgmStep++;
+  },520);
+}
+function stopBgm(){ if(bgmTimer){clearInterval(bgmTimer); bgmTimer=null;} }
+function toggleSound(){
+  soundOn=!soundOn;
+  const b=document.getElementById('soundBtn');
+  if(b) b.textContent=soundOn?'🔊 音ON':'🔇 音OFF';
+  if(soundOn){ initAudio(); sfxAdd(); startBgm(); }
+  else stopBgm();
+}
+
+// 商品タップ音を追加
+const __soundToggle = toggle;
+toggle=function(i){
+  const wasSelected=cart.includes(i);
+  const before=cart.length;
+  __soundToggle(i);
+  if(cart.length>before) { sfxAdd(); startBgm(); }
+  else if(wasSelected && cart.length<before) sfxRemove();
+  else if(cart.length===before && !wasSelected) sfxError();
+};
+
+// 会計・判定音を追加
+const __soundJudge = judge;
+judge=function(){
+  if(!cart.length){ sfxError(); __soundJudge(); return; }
+  sfxScan();
+  setTimeout(()=>{
+    __soundJudge();
+    setTimeout(()=>{
+      const rank=(document.getElementById('rank')?.textContent||'');
+      if(rank.startsWith('S')) sfxGood();
+      else if(rank.startsWith('A')) { tone(659,.12,'triangle',.04); tone(784,.16,'triangle',.04,.10); }
+      else if(rank.startsWith('D')) sfxBad();
+      else tone(523,.12,'triangle',.03);
+    },120);
+  },180);
+};
+
+const __soundClear = clearCart;
+clearCart=function(){ sfxRemove(); __soundClear(); };
+
+// 最初のタップで音声コンテキストを起動。BGMは控えめにループ。
+document.addEventListener('pointerdown',()=>{ if(soundOn){ initAudio(); startBgm(); } },{once:true});
+</script>
+
 </body>
 </html>
