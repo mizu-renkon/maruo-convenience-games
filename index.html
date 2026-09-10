@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta name="description" content="1,000円以内で栄養バランスの良いコンビニ昼食を考える教育ゲーム">
+<meta name="theme-color" content="#087cc1">
+<link rel="manifest" href="manifest.webmanifest">
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>マルオコンビニエンスストアで栄養バランスの良い買い物をしようゲーム</title>
+<style>
+:root{--bg:#f5f7fb;--card:#fff;--ink:#172033;--accent:#16824b;--accent2:#ffb000;--danger:#d94b4b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Noto Sans JP","Yu Gothic",sans-serif}
+header{background:linear-gradient(135deg,#16824b,#2eae6d);color:#fff;padding:20px 16px;position:sticky;top:0;z-index:3}
+h1{font-size:22px;margin:0 0 8px}.sub{font-size:13px;opacity:.95}
+.wrap{max-width:1100px;margin:auto;padding:16px}
+.top{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.badge{background:#fff;border-radius:999px;padding:8px 13px;font-weight:700;box-shadow:0 2px 8px #0001}
+button{border:0;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer}
+.primary{background:var(--accent);color:#fff}.secondary{background:#e9eef5;color:var(--ink)}.danger{background:#fff0f0;color:#b42323}
+#products{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px}
+.product{background:var(--card);border:2px solid transparent;border-radius:14px;padding:12px;box-shadow:0 2px 10px #0000000c;cursor:pointer}
+.product.selected{border-color:var(--accent);background:#effaf4}
+.product h3{font-size:15px;margin:0 0 7px}.price{font-weight:800;color:#0b7040}.tag{font-size:11px;background:#eef2f7;padding:4px 7px;border-radius:999px;display:inline-block;margin-top:5px}
+.note{font-size:12px;color:#667085;margin-top:6px}
+.cart{background:#fff;border-radius:16px;padding:15px;margin:14px 0;box-shadow:0 2px 10px #0001}
+.cartline{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #edf0f4}.cartline:last-child{border:0}
+.summary{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:10px;font-weight:800}
+.filters{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px}.filters button.active{background:#16824b;color:#fff}
+.result{display:none;background:#fff;border-radius:18px;padding:18px;margin-top:15px;box-shadow:0 3px 15px #0002}.rank{font-size:52px;font-weight:900;text-align:center}.score{text-align:center;font-size:20px;font-weight:800}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin-top:12px}.stat{background:#f6f8fb;border-radius:12px;padding:10px}.stat b{display:block;margin-bottom:4px}.good{color:#087443}.warn{color:#a05a00}.bad{color:#b42323}
+.small{font-size:12px;color:#667085}.hidden{display:none!important}
+@media(max-width:600px){h1{font-size:18px}.product{padding:10px}}
+</style>
+
+<style>
+body{background:linear-gradient(#edf7fb,#f5f8fb)!important}
+header{background:linear-gradient(135deg,#087cc1,#18a8e0)!important}
+header:before{content:"🏪";font-size:34px;margin-right:8px}
+.wrap{max-width:1150px!important}
+.storefront{background:linear-gradient(135deg,#fff,#e8f8ff);border-radius:24px;padding:18px;margin:14px 0;box-shadow:0 8px 25px #0002;border:3px solid #bce8fa}
+.storefront .facade{height:145px;border-radius:18px;background:linear-gradient(#fff 0 25%,#eaf7ff 25% 100%);position:relative;overflow:hidden}
+.storefront .sign{position:absolute;top:12px;left:8%;right:8%;background:#fff;border:5px solid #e51f5a;border-radius:15px;text-align:center;padding:10px;font-size:25px;font-weight:1000;color:#e51f5a}
+.storefront .windows{position:absolute;left:5%;right:5%;bottom:0;height:70px;display:flex;gap:8px}
+.storefront .window{flex:1;border-radius:8px 8px 0 0;background:linear-gradient(135deg,#bcecff,#fff);border:3px solid #76c9e8}
+.shelfscene{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}
+.shelfscene>div{background:#fff;border-radius:14px;padding:10px;text-align:center;box-shadow:0 3px 10px #0001}
+.shelfscene .icons{font-size:32px;letter-spacing:8px}
+.product{position:relative;overflow:hidden}
+.product:before{content:"";display:block;height:72px;margin:-12px -12px 8px;background:linear-gradient(145deg,#f7fbfd,#dfeef5);border-radius:12px}
+.product h3{position:relative}
+.product .tag{position:relative}
+.product.selected:after{content:"🛒 カゴに入っています";position:absolute;top:8px;right:8px;background:#18a66b;color:#fff;padding:5px 7px;border-radius:9px;font-size:10px;font-weight:900;animation:pop .18s ease}
+@keyframes pop{from{transform:scale(.8);opacity:0}to{transform:scale(1);opacity:1}}
+#cart{max-height:260px;overflow:auto}
+#result{border:3px solid #bce8fa}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>🏪 マルオコンビニエンスストアで栄養バランスの良い買い物をしようゲーム</h1>
+    <div class="sub">1,000円以内で昼食を組み合わせよう。商品の詳しい栄養成分は、ゲーム終了まで秘密！</div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="top">
+    <div class="badge">💰 所持金：<span id="money">1000</span>円</div>
+    <div class="badge">🛒 商品数：<span id="count">0</span>個</div>
+    <button class="secondary" onclick="resetGame()">最初から</button>
+  </div>
+
+  <div class="cart">
+    <b>🛒 今の買い物</b>
+    <div id="cart"></div>
+    <div class="summary"><span>合計：<span id="total">0</span>円</span><span>残り：<span id="remain">1000</span>円</span></div>
+    <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="primary" onclick="judge()">この組み合わせで判定！</button>
+      <button class="danger" onclick="clearCart()">買い物を空にする</button>
+    </div>
+  </div>
+
+  
+<div class="storefront">
+  <div class="facade">
+    <div class="sign">マルオ コンビニエンスストア</div>
+    <div class="windows"><div class="window"></div><div class="window"></div><div class="window"></div><div class="window"></div></div>
+  </div>
+  <div class="shelfscene">
+    <div><div class="icons">🍙🥪🍣</div><b>おにぎり・主食</b></div>
+    <div><div class="icons">🍗🥗🥚</div><b>おかず・サラダ</b></div>
+    <div><div class="icons">🥛🍌🥤</div><b>飲み物・デザート</b></div>
+  </div>
+  <div style="margin-top:10px;background:#fff;border:2px solid #087cc1;border-radius:14px;padding:10px;font-weight:800">
+    👨‍🏪 マルオ店長：「商品をタップしてカゴに入れよう！詳しい栄養成分はレジまで秘密です。」
+  </div>
+</div>
+<div class="filters" id="filters"></div>
+  <div id="products"></div>
+
+  <section id="result" class="result">
+    <div class="rank" id="rank"></div>
+    <div class="score" id="score"></div>
+    <p id="comment"></p>
+    <div class="grid" id="stats"></div>
+    <div style="margin-top:14px">
+      <b>💡 改善アドバイス</b>
+      <p id="advice"></p>
+    </div>
+    <button class="primary" onclick="window.scrollTo({top:0,behavior:'smooth'})">もう一度挑戦する</button>
+  </section>
+
+  <p class="small" style="margin-top:18px">
+    ※栄養データはゲーム用のモデル値です。実際の商品はメーカー・容量・時期によって異なります。
+    実際の食品表示では、エネルギー、たんぱく質、脂質、炭水化物、食塩相当量などが表示されます。
+  </p>
+</main>
+
+<script>
+const products = [
+{name:"鮭おにぎり",price:180,cat:"主食",kcal:180,p:5,f:2,c:34,salt:.8,fiber:1.2,ca:20,fe:.5,vc:0,va:8},
+{name:"ツナマヨおにぎり",price:180,cat:"主食",kcal:230,p:5,f:8,c:34,salt:.9,fiber:1.0,ca:15,fe:.5,vc:0,va:20},
+{name:"梅おにぎり",price:150,cat:"主食",kcal:170,p:3,f:1,c:36,salt:1.1,fiber:1.3,ca:15,fe:.4,vc:0,va:3},
+{name:"おかかおにぎり",price:150,cat:"主食",kcal:175,p:4,f:1,c:36,salt:.9,fiber:1.1,ca:20,fe:.5,vc:0,va:5},
+{name:"いなり寿司3個",price:280,cat:"主食",kcal:330,p:8,f:9,c:52,salt:1.8,fiber:2.0,ca:45,fe:1.5,vc:2,va:5},
+{name:"焼きそば",price:430,cat:"主食",kcal:520,p:15,f:18,c:70,salt:3.5,fiber:3.5,ca:40,fe:1.5,vc:8,va:80},
+{name:"ナポリタン",price:450,cat:"主食",kcal:480,p:16,f:15,c:68,salt:3.0,fiber:4.0,ca:55,fe:1.8,vc:10,va:120},
+{name:"ミックスサンド",price:350,cat:"主食",kcal:390,p:15,f:19,c:40,salt:2.0,fiber:2.5,ca:80,fe:1.8,vc:12,va:90},
+{name:"サラダチキン",price:270,cat:"主菜",kcal:115,p:24,f:1.5,c:1,salt:1.3,fiber:0,ca:10,fe:.4,vc:0,va:5},
+{name:"ゆで卵2個",price:220,cat:"主菜",kcal:150,p:13,f:10,c:1,salt:.3,fiber:0,ca:50,fe:1.8,vc:0,va:140},
+{name:"焼き鳥もも2本",price:300,cat:"主菜",kcal:260,p:20,f:15,c:10,salt:1.7,fiber:0,ca:12,fe:1.2,vc:2,va:40},
+{name:"からあげ4個",price:350,cat:"主菜",kcal:330,p:18,f:22,c:17,salt:1.5,fiber:.8,ca:25,fe:1.2,vc:2,va:25},
+{name:"豚しゃぶサラダ",price:420,cat:"主菜",kcal:280,p:20,f:16,c:12,salt:2.0,fiber:2.5,ca:50,fe:1.2,vc:25,va:120},
+{name:"焼き魚（鮭）",price:350,cat:"主菜",kcal:210,p:20,f:13,c:2,salt:1.2,fiber:0,ca:15,fe:.6,vc:0,va:25},
+{name:"ハンバーグ",price:380,cat:"主菜",kcal:300,p:17,f:20,c:12,salt:1.8,fiber:1.0,ca:30,fe:1.7,vc:2,va:30},
+{name:"豆腐バー",price:200,cat:"主菜",kcal:120,p:11,f:7,c:4,salt:.8,fiber:.8,ca:90,fe:1.2,vc:1,va:5},
+{name:"野菜サラダ",price:250,cat:"副菜",kcal:70,p:2,f:3,c:9,salt:.5,fiber:3.0,ca:35,fe:.6,vc:35,va:220},
+{name:"海藻サラダ",price:250,cat:"副菜",kcal:50,p:2,f:2,c:7,salt:.8,fiber:3.5,ca:50,fe:1.0,vc:12,va:90},
+{name:"ひじき煮",price:180,cat:"副菜",kcal:90,p:3,f:3,c:13,salt:1.0,fiber:3.5,ca:80,fe:2.0,vc:2,va:80},
+{name:"きんぴらごぼう",price:180,cat:"副菜",kcal:100,p:2,f:4,c:14,salt:1.0,fiber:3.5,ca:45,fe:.8,vc:2,va:10},
+{name:"ほうれん草のおひたし",price:180,cat:"副菜",kcal:40,p:3,f:1,c:5,salt:.7,fiber:2.5,ca:60,fe:1.5,vc:15,va:250},
+{name:"ブロッコリーサラダ",price:250,cat:"副菜",kcal:100,p:5,f:5,c:9,salt:.6,fiber:4.0,ca:60,fe:1.0,vc:45,va:250},
+{name:"野菜スープ",price:250,cat:"副菜",kcal:80,p:3,f:2,c:12,salt:1.4,fiber:2.5,ca:35,fe:.7,vc:25,va:160},
+{name:"豚汁",price:300,cat:"副菜",kcal:180,p:8,f:9,c:15,salt:2.0,fiber:2.5,ca:45,fe:1.0,vc:12,va:100},
+{name:"プレーンヨーグルト",price:150,cat:"乳製品・果物",kcal:90,p:4,f:3,c:11,salt:.1,fiber:0,ca:140,fe:0,vc:1,va:35},
+{name:"飲むヨーグルト",price:180,cat:"乳製品・果物",kcal:140,p:4,f:3,c:23,salt:.1,fiber:0,ca:130,fe:0,vc:1,va:30},
+{name:"牛乳500ml",price:190,cat:"乳製品・果物",kcal:335,p:17,f:19,c:24,salt:.5,fiber:0,ca:570,fe:0,vc:2,va:190},
+{name:"低脂肪乳500ml",price:180,cat:"乳製品・果物",kcal:230,p:17,f:6,c:30,salt:.5,fiber:0,ca:600,fe:0,vc:2,va:70},
+{name:"バナナ",price:150,cat:"乳製品・果物",kcal:90,p:1,f:0,c:23,salt:0,fiber:1.1,ca:6,fe:.3,vc:16,va:3},
+{name:"カットフルーツ",price:300,cat:"乳製品・果物",kcal:80,p:1,f:0,c:20,salt:0,fiber:2.0,ca:15,fe:.3,vc:40,va:80},
+{name:"カップラーメン",price:250,cat:"チャレンジ商品",kcal:350,p:8,f:14,c:46,salt:5.0,fiber:2.5,ca:80,fe:1.5,vc:2,va:10},
+{name:"大盛りカップ焼きそば",price:300,cat:"チャレンジ商品",kcal:700,p:14,f:30,c:90,salt:5.5,fiber:4.0,ca:80,fe:2.0,vc:0,va:10},
+{name:"菓子パン（クリーム）",price:180,cat:"チャレンジ商品",kcal:420,p:7,f:20,c:53,salt:.6,fiber:1.5,ca:45,fe:1.0,vc:0,va:80},
+{name:"メロンパン",price:170,cat:"チャレンジ商品",kcal:430,p:7,f:15,c:67,salt:.5,fiber:1.5,ca:35,fe:1.0,vc:0,va:50},
+{name:"フライドチキン",price:250,cat:"チャレンジ商品",kcal:220,p:14,f:15,c:8,salt:1.5,fiber:.3,ca:15,fe:.7,vc:1,va:15},
+{name:"ポテトサラダ",price:180,cat:"チャレンジ商品",kcal:160,p:2,f:10,c:15,salt:.8,fiber:1.5,ca:20,fe:.4,vc:10,va:50},
+{name:"ポテトチップス",price:180,cat:"チャレンジ商品",kcal:330,p:4,f:21,c:31,salt:.6,fiber:2.5,ca:20,fe:.6,vc:10,va:1},
+{name:"チョコレート",price:150,cat:"チャレンジ商品",kcal:280,p:4,f:17,c:28,salt:.1,fiber:2.0,ca:80,fe:1.5,vc:0,va:5},
+{name:"エナジー系飲料",price:220,cat:"チャレンジ商品",kcal:110,p:0,f:0,c:28,salt:0,fiber:0,ca:0,fe:0,vc:0,va:0},
+{name:"炭酸飲料500ml",price:180,cat:"チャレンジ商品",kcal:225,p:0,f:0,c:56,salt:0,fiber:0,ca:0,fe:0,vc:0,va:0}
+];
+
+let cart=[], filter="すべて";
+const cats=["すべて","主食","主菜","副菜","乳製品・果物","チャレンジ商品"];
+
+function yen(n){return n.toLocaleString("ja-JP")}
+function renderFilters(){
+  const el=document.getElementById("filters");
+  el.innerHTML=cats.map(c=>`<button class="${c===filter?'active':''}" onclick="setFilter('${c}')">${c}</button>`).join("");
+}
+function setFilter(c){filter=c;renderFilters();renderProducts()}
+function renderProducts(){
+  const el=document.getElementById("products");
+  const list=filter==="すべて"?products:products.filter(p=>p.cat===filter);
+  el.innerHTML=list.map((p,i)=>{
+    const idx=products.indexOf(p), selected=cart.includes(idx);
+    return `<div class="product ${selected?'selected':''}" onclick="toggle(${idx})">
+      <h3>${p.name}</h3><div class="price">${yen(p.price)}円</div><span class="tag">${p.cat}</span>
+      <div class="note">栄養成分はゲーム終了まで非表示</div>
+    </div>`;
+  }).join("");
+}
+function toggle(i){
+  const p=products[i];
+  if(cart.includes(i)){cart=cart.filter(x=>x!==i)}
+  else if(total()+p.price<=1000){cart.push(i)}
+  else alert("1,000円を超えてしまいます！");
+  update();
+}
+function total(){return cart.reduce((s,i)=>s+products[i].price,0)}
+function update(){
+  const t=total();
+  document.getElementById("money").textContent=1000;
+  document.getElementById("total").textContent=yen(t);
+  document.getElementById("remain").textContent=yen(1000-t);
+  document.getElementById("count").textContent=cart.length;
+  document.getElementById("cart").innerHTML=cart.length?cart.map(i=>`<div class="cartline"><span>${products[i].name}</span><b>${yen(products[i].price)}円</b></div>`).join(""):"<div class='small' style='padding:8px 0'>まだ商品を選んでいません。</div>";
+  renderProducts();
+}
+function clearCart(){cart=[];document.getElementById("result").style.display="none";update()}
+function resetGame(){clearCart();window.scrollTo({top:0,behavior:"smooth"})}
+
+function judge(){
+  if(!cart.length){alert("まず商品を1つ以上選んでください。");return}
+  const xs=cart.map(i=>products[i]);
+  const sum=k=>xs.reduce((a,p)=>a+p[k],0);
+  const totalPrice=sum("price"), kcal=sum("kcal"), protein=sum("p"), fat=sum("f"), carb=sum("c"), salt=sum("salt"), fiber=sum("fiber"), ca=sum("ca"), iron=sum("fe"), vc=sum("vc"), va=sum("va");
+  const catsSet=new Set(xs.map(p=>p.cat));
+  const mains=xs.some(p=>p.cat==="主食"), sides=xs.some(p=>p.cat==="主菜"), veg=xs.some(p=>p.cat==="副菜"), dairyfruit=xs.some(p=>p.cat==="乳製品・果物");
+  let score=0, reasons=[];
+  // The scoring is intentionally about a balanced lunch, not weight loss.
+  if(mains)score+=15; else reasons.push("主食がありません");
+  if(sides)score+=20; else reasons.push("主菜がありません");
+  if(veg)score+=20; else reasons.push("副菜（野菜など）がありません");
+  if(dairyfruit)score+=10;
+  // Lunch-energy window is broad because needs vary by age/activity.
+  if(kcal>=500 && kcal<=900)score+=10; else if(kcal>=400 && kcal<=1000)score+=5; else reasons.push(kcal<400?"昼食としてエネルギーが少なめです":"エネルギーが多めです");
+  if(protein>=18 && protein<=40)score+=8; else if(protein>=12)score+=4; else reasons.push("たんぱく質が少なめです");
+  if(fat>=10 && fat<=30)score+=4; else if(fat<=40)score+=2;
+  if(carb>=60 && carb<=120)score+=4; else if(carb>=45)score+=2;
+  if(salt<=3.0)score+=5; else if(salt<=4.0)score+=2; else reasons.push("食塩相当量が多めです");
+  if(fiber>=5)score+=2; else if(fiber>=3)score+=1; else reasons.push("食物繊維が少なめです");
+  if(ca>=150)score+=1;
+  if(iron>=2)score+=1;
+  if(vc>=20)score+=1;
+  if(va>=200)score+=1;
+  if(totalPrice<=1000)score+=5;
+  // Diversity bonus
+  if(catsSet.size>=4)score+=3;
+  if(xs.some(p=>p.cat==="チャレンジ商品") && salt>3)score-=5;
+
+  score=Math.max(0,Math.min(100,score));
+  let rank=score>=90?"S":score>=80?"A":score>=65?"B":score>=50?"C":"D";
+  let comment=rank==="S"?"すばらしい！いろいろな食品を組み合わせ、栄養バランスをしっかり考えられています。":
+              rank==="A"?"かなり良い組み合わせです！あと少し工夫すると、さらにバランスが良くなります。":
+              rank==="B"?"まずまずです。足りない食品群や栄養素を1品追加・変更すると改善できます。":
+              rank==="C"?"少し偏りがあります。主食・主菜・副菜の組み合わせを見直してみましょう。":
+              "大きく偏っています。まず主食・主菜・副菜をそろえるところから考えてみましょう。";
+  const advice = reasons.length ? reasons.slice(0,4).join("／") + "。": "大きな弱点はありません。別の組み合わせにも挑戦してみましょう！";
+
+  document.getElementById("rank").textContent=rank+"ランク";
+  document.getElementById("score").textContent=`${score} / 100点　・　使用金額 ${yen(totalPrice)}円`;
+  document.getElementById("comment").textContent=comment;
+  document.getElementById("advice").textContent=advice;
+  document.getElementById("stats").innerHTML=[
+    ["エネルギー",`${kcal} kcal`,kcal>=500&&kcal<=900?"good":"warn"],
+    ["たんぱく質",`${protein.toFixed(1)} g`,protein>=18&&protein<=40?"good":"warn"],
+    ["脂質",`${fat.toFixed(1)} g`,fat>=10&&fat<=30?"good":"warn"],
+    ["炭水化物",`${carb.toFixed(1)} g`,carb>=60&&carb<=120?"good":"warn"],
+    ["食塩相当量",`${salt.toFixed(1)} g`,salt<=3?"good":salt<=4?"warn":"bad"],
+    ["食物繊維",`${fiber.toFixed(1)} g`,fiber>=5?"good":"warn"],
+    ["カルシウム",`${ca} mg`,ca>=150?"good":"warn"],
+    ["鉄",`${iron.toFixed(1)} mg`,iron>=2?"good":"warn"],
+    ["ビタミンC",`${vc} mg`,vc>=20?"good":"warn"],
+    ["ビタミンA",`${va} μg`,va>=200?"good":"warn"]
+  ].map(a=>`<div class="stat"><b>${a[0]}</b><span class="${a[2]}">${a[1]}</span></div>`).join("");
+  document.getElementById("result").style.display="block";
+  document.getElementById("result").scrollIntoView({behavior:"smooth"});
+}
+renderFilters();update();
+</script>
+
+<script>
+const MARUO_ICONS={"鮭おにぎり": "🍙", "ツナマヨおにぎり": "🍙", "梅おにぎり": "🍙", "おかかおにぎり": "🍙", "いなり寿司3個": "🍣", "焼きそば": "🍝", "ナポリタン": "🍝", "ミックスサンド": "🥪", "サラダチキン": "🍗", "ゆで卵2個": "🥚", "焼き鳥もも2本": "🍢", "からあげ4個": "🍗", "豚しゃぶサラダ": "🥗", "焼き魚（鮭）": "🐟", "ハンバーグ": "🍖", "豆腐バー": "🧈", "野菜サラダ": "🥗", "海藻サラダ": "🌿", "ひじき煮": "🥢", "きんぴらごぼう": "🥕", "ほうれん草のおひたし": "🥬", "ブロッコリーサラダ": "🥦", "野菜スープ": "🍲", "豚汁": "🍲", "プレーンヨーグルト": "🥛", "飲むヨーグルト": "🥛", "牛乳500ml": "🥛", "低脂肪乳500ml": "🥛", "バナナ": "🍌", "カットフルーツ": "🍎", "カップラーメン": "🍜", "大盛りカップ焼きそば": "🍜", "菓子パン（クリーム）": "🥐", "メロンパン": "🍈", "フライドチキン": "🍗", "ポテトサラダ": "🥔", "ポテトチップス": "🥔", "チョコレート": "🍫", "エナジー系飲料": "🥤", "炭酸飲料500ml": "🥤"};
+function maruoIcon(name){return MARUO_ICONS[name]||"🛍️";}
+const oldRenderProducts=renderProducts;
+renderProducts=function(){
+ const el=document.getElementById("products");
+ const list=filter==="すべて"?products:products.filter(p=>p.cat===filter);
+ el.innerHTML=list.map(p=>{
+   const idx=products.indexOf(p), selected=cart.includes(idx);
+   return `<div class="product ${selected?'selected':''}" onclick="toggle(${idx})">
+     <div style="font-size:48px;text-align:center;margin-top:-4px">${maruoIcon(p.name)}</div>
+     <h3>${p.name}</h3><div class="price">${yen(p.price)}円</div><span class="tag">${p.cat}</span>
+     <div class="note">🔒 詳しい栄養成分はレジまで秘密</div>
+   </div>`;
+ }).join("");
+};
+const oldToggle=toggle;
+toggle=function(i){
+ const before=cart.length; oldToggle(i);
+ if(cart.length>before){
+   document.body.animate([{transform:"scale(1)"},{transform:"scale(1.003)"},{transform:"scale(1)"}],{duration:180});
+ }
+};
+renderProducts();
+</script>
+</body>
+</html>
